@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "431478865684",
+    "project_id": "electric-app-63f3a",
+    "storage_bucket": "electric-app-63f3a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:431478865684:android:527412d642884676204c01",
+        "android_client_info": {
+          "package_name": "com.example.electric_m"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgFPr5R4FF4mPqoB8_n2VlXyQWF1LNiCc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

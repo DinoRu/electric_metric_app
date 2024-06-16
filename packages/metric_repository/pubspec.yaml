@@ -1,0 +1,29 @@
+name: metric_repository
+description: "Handling metrics package."
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: '>=3.4.1 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  http: any
+  flutter:
+    sdk: flutter
+
+
+dev_dependencies:
+  bloc:
+  flutter_bloc:
+  equatable:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+  user_repository:
+    path: ../user_repository
+
+
+
+flutter:

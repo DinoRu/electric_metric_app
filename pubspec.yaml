@@ -1,0 +1,57 @@
+name: electric_meter_app
+description: "A new Flutter project."
+
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.1 <4.0.0"
+
+dependencies:
+  shared_preferences: ^2.2.3
+  bloc:
+  equatable:
+  exif: ^3.3.0
+  flutter_bloc:
+  flutter:
+    sdk: flutter
+  google_fonts:
+  image_picker:
+  firebase_core: ^3.0.0
+  firebase_storage:
+  firebase_app_check:
+  http:
+  permission_handler: ^11.3.1
+  image: ^4.2.0
+  flutter_exif_plugin: ^1.1.0
+
+  get_storage: ^2.1.1
+
+  cupertino_icons: ^1.0.6
+  user_repository:
+    path: "packages/user_repository"
+
+  metric_repository:
+    path: "packages/metric_repository"
+  geolocator: ^12.0.0
+  quickalert: ^1.1.0
+  flutter_launcher_icons: ^0.13.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+  assets:
+    - assets/icons/
+
+  uses-material-design: true
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  image_path: "assets/icons/home_logo.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/icons/foreground_icon.png"
