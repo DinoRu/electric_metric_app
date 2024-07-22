@@ -1,6 +1,6 @@
 # electric_meter_app
 
-A new Flutter project.
+The application is aims to help the supervisor to capture the meter reading.
 
 ## Getting Started
 
