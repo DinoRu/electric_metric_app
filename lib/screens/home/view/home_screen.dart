@@ -7,8 +7,6 @@ import 'package:electric_meter_app/screens/home/view/search_metric_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:user_repository/user_repository.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -60,28 +58,12 @@ class HomeScreen extends StatelessWidget {
         )
       ]),
       // drawer: const MyDrawer(),
-      body: BlocConsumer<MetricBloc, MetricState>(
-        listener: (context, state) {
-          if (state is MetricLoading) {
-            QuickAlert.show(
-              context: context,
-              type: QuickAlertType.loading,
-              title: 'Загрузка...',
-              text: 'Получение данных',
-            );
-          } else if (state is MetricError) {
-            QuickAlert.show(
-              context: context,
-              type: QuickAlertType.error,
-              title: 'Oops...',
-              text: "Не удалось данные!",
-            );
-          } else {
-            Navigator.of(context, rootNavigator: true).pop(context);
-          }
-        },
+      body: BlocBuilder<MetricBloc, MetricState>(
         builder: (context, state) {
-          if (state is MetricLoaded) {
+          if (state is MetricLoading) {
+            return const Center(
+                child: CircularProgressIndicator(color: Colors.grey));
+          } else if (state is MetricLoaded) {
             return RefreshIndicator(
               onRefresh: () => _refreshList(context, authBloc.state.user!),
               child: ListView.builder(

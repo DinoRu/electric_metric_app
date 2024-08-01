@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:metric_repository/metric_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:user_repository/user_repository.dart';
 
 part 'metric_event.dart';
@@ -26,22 +23,12 @@ class MetricBloc extends Bloc<MetricEvent, MetricState> {
     on<FetchMetricByUser>((event, emit) async {
       emit(MetricLoading());
       try {
-        // final prefs = await SharedPreferences.getInstance();
-        // final cachedData = prefs.getString('cachedMetrics');
-        // if (cachedData != null) {
-        //   List<dynamic> cachedMetrics = jsonDecode(cachedData);
-        //   metrics = cachedMetrics.map((e) => Metric.fromJson(e)).toList();
-        //   emit(MetricLoaded(metrics: metrics));
-        // }
+
         metrics =
             await metricRepository.getMetricByDepartmentFromAll(event.user);
         emit(MetricLoaded(metrics: metrics));
 
-        //Cached data;
-        // List<dynamic> metersJsonList = metrics.map((e) => e.toJson()).toList();
-        // await prefs.setString('cachedMetrics', jsonEncode(metersJsonList));
       } catch (e) {
-        print('Error fetching metrics: $e');
         emit(MetricError());
       }
     });
