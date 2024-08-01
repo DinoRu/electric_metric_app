@@ -1,8 +1,7 @@
-
-import 'package:meta/meta.dart';
 import 'dart:convert';
 
-MetricEntity metricEntityFromJson(String str) => MetricEntity.fromJson(json.decode(str));
+MetricEntity metricEntityFromJson(String str) =>
+    MetricEntity.fromJson(json.decode(str));
 
 String metricEntityToJson(MetricEntity data) => json.encode(data.toJson());
 
@@ -34,30 +33,30 @@ class MetricEntity {
   });
 
   factory MetricEntity.fromJson(Map<String, dynamic> json) => MetricEntity(
-    taskId: json["task_id"],
-    code: json["code"],
-    name: json["name"],
-    address: json["address"],
-    currentIndication: json["current_indication"],
-    previousIndication: json["previous_indication"],
-    comment: json["comment"],
-    status: json["status"],
-    nearPhotoUrl: json["near_photo_url"],
-    farPhotoUrl: json["far_photo_url"],
-    number: json["number"],
-  );
+        taskId: json["task_id"],
+        code: json["code"],
+        name: json["name"],
+        address: json["address"],
+        currentIndication: json["current_indication"],
+        previousIndication: json["previous_indication"],
+        comment: json["comment"],
+        status: json["status"],
+        nearPhotoUrl: json["near_photo_url"],
+        farPhotoUrl: json["far_photo_url"],
+        number: json["number"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "task_id": taskId,
-    "code": code,
-    "name": name,
-    "address": address,
-    "current_indication": currentIndication,
-    "previous_indication": previousIndication,
-    "comment": comment,
-    "status": status,
-    "near_photo_url": nearPhotoUrl,
-    "far_photo_url": farPhotoUrl,
-    "number": number,
-  };
+        "task_id": taskId,
+        "code": code,
+        "name": name,
+        "address": address,
+        "current_indication": currentIndication,
+        "previous_indication": previousIndication,
+        "comment": comment,
+        "status": status,
+        "near_photo_url": nearPhotoUrl,
+        "far_photo_url": farPhotoUrl,
+        "number": number,
+      };
 }

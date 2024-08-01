@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+// import 'package:electric_meter_app/services/background_service.dart';
 import 'package:electric_meter_app/simple_bloc_observer.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -14,6 +15,7 @@ void main() async {
   await FirebaseAppCheck.instance.activate(
     androidProvider: AndroidProvider.debug,
   );
+  // initializeService();
   Bloc.observer = const SimpleBlocObserver();
   runApp(MyApp(ApiUserRepository()));
 }

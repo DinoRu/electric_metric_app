@@ -128,11 +128,11 @@ class _DetailScreenState extends State<DetailScreen> {
         listener: (context, state) {
           if (state is PrelevementLoading) {
             QuickAlert.show(
-              context: context,
-              type: QuickAlertType.loading,
-              title: 'Загрузка...',
-              text: 'Задача выполняется...',
-            );
+                context: context,
+                type: QuickAlertType.loading,
+                title: 'Загрузка...',
+                text: 'Задача выполняется...',
+                barrierDismissible: false);
           } else if (state is PrelevementSuccess) {
             Navigator.of(context, rootNavigator: true).pop();
             QuickAlert.show(
@@ -142,6 +142,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 title: 'Успех',
                 confirmBtnText: 'Ок',
                 confirmBtnColor: Colors.greenAccent,
+                barrierDismissible: false,
                 onConfirmBtnTap: () {
                   Navigator.of(context).pop();
                   context.read<MetricBloc>().add(RemoveMetric(widget.metric));

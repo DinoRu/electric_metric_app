@@ -4,8 +4,6 @@ import 'package:electric_meter_app/screens/home/bloc/meter_bloc/meter_bloc.dart'
 import 'package:electric_meter_app/screens/home/view/proccess_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:user_repository/user_repository.dart';
 
 class ProccessedMeterScreen extends StatelessWidget {
@@ -56,26 +54,12 @@ class ProccessedMeterScreen extends StatelessWidget {
           )
         ],
       ),
-      body: BlocConsumer<MeterBloc, MeterState>(listener: (context, state) {
+      body: BlocBuilder<MeterBloc, MeterState>(builder: (context, state) {
         if (state is MeterLoading) {
-          QuickAlert.show(
-            context: context,
-            type: QuickAlertType.loading,
-            title: 'Загрузка...',
-            text: 'Получение данных',
+          return Center(
+            child: CircularProgressIndicator(color: Colors.green[300]),
           );
-        } else if (state is MeterError) {
-          QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            title: 'Oops...',
-            text: "Не удалось данные!",
-          );
-        } else {
-          Navigator.of(context, rootNavigator: true).pop();
-        }
-      }, builder: (context, state) {
-        if (state is MeterLoaded) {
+        } else if (state is MeterLoaded) {
           return RefreshIndicator(
             onRefresh: () => _refreshList(context, authBloc.state.user!),
             child: ListView.builder(
