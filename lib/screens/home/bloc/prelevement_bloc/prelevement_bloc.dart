@@ -65,6 +65,17 @@ class PrelevementBloc extends Bloc<PrelevementEvent, PrelevementState> {
     await APICacheManager().addCacheData(
         APICacheDBModel(key: cackeKey, syncData: jsonEncode(data)));
     log("Data successfully in cache");
+
+    // LIST OF CACHE KEY
+    List<String> cacheKeys = [];
+    var cacheKeysData =
+        await APICacheManager().getCacheData("API_pending_keys");
+    if (cacheKeysData != null) {
+      cacheKeys = List<String>.from(jsonDecode(cacheKeysData.syncData));
+    }
+    cacheKeys.add(cackeKey);
+    await APICacheManager().addCacheData(APICacheDBModel(
+        key: "API_pending_keys", syncData: jsonEncode(cacheKeys)));
   }
 
   Future<void> _updateDataAndSendToApi(SubmitEvent event) async {

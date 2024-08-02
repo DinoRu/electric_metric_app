@@ -7,7 +7,6 @@ import 'package:api_cache_manager/utils/cache_manager.dart';
 import 'package:archive/archive_io.dart';
 import 'package:metric_repository/src/metric_repo.dart';
 import 'package:http/http.dart' as http;
-import 'package:metric_repository/src/models/pending_model.dart';
 import 'package:user_repository/user_repository.dart';
 
 import 'models/model.dart';
@@ -22,7 +21,7 @@ class MetricRepository implements MetricRepo {
         const url = "http://45.84.226.183:5000/tasks";
         final response = await http.get(Uri.parse(url),
             headers: {'Content-Type': 'application/json; charset=utf-8'});
-        print("URL : HIT");
+        log("URL : HIT");
         if (response.statusCode == 200) {
           Utf8Decoder decoder = const Utf8Decoder();
           String decoderBody = decoder.convert(response.bodyBytes);
@@ -56,7 +55,7 @@ class MetricRepository implements MetricRepo {
           List<Map<String, dynamic>>.from(jsonDecode(decodedData));
       List<Metric> metrics =
           dataResults.map((e) => Metric.fromJson(e)).toList();
-      print("CACHE : HIT");
+      log("CACHE : HIT");
       return metrics;
     }
     return [];
@@ -93,7 +92,7 @@ class MetricRepository implements MetricRepo {
             "http://45.84.226.183:5000/tasks/?&order=ASC&condition=Проверяется";
         final response = await http.get(Uri.parse(url),
             headers: {'Content-Type': 'application/json; charset=utf-8'});
-        print("URL : HIT");
+        log("URL : HIT");
         if (response.statusCode == 200) {
           Utf8Decoder decoder = const Utf8Decoder();
           String decoderBody = decoder.convert(response.bodyBytes);
@@ -125,7 +124,7 @@ class MetricRepository implements MetricRepo {
       List<Map<String, dynamic>> dataResults =
           List<Map<String, dynamic>>.from(jsonDecode(decodedData));
       List<Meter> meters = dataResults.map((e) => Meter.fromJson(e)).toList();
-      print("CACHE : HIT");
+      log("CACHE : HIT");
       return meters;
     }
     return [];
@@ -143,8 +142,49 @@ class MetricRepository implements MetricRepo {
     }
   }
 
+  @override
   Future<List<PendingMeter>> getPendingMeters() async {
     var cacheManager = APICacheManager();
-    var cacheData = await cacheManager.getAllCacheData();
+    var cacheKeysData = await cacheManager.getCacheData("API_pending_keys");
+
+    if (cacheKeysData == null) {
+      return [];
+    }
+    List<String> cacheKeys =
+        List<String>.from(jsonDecode(cacheKeysData.syncData));
+    List<PendingMeter> pendingMeters = [];
+    for (var key in cacheKeys) {
+      var cacheKey = await cacheManager.getCacheData(key);
+      if (cacheKey != null) {
+        Map<String, dynamic> data = jsonDecode(cacheKey.syncData);
+        pendingMeters.add(PendingMeter.fromJson(data));
+      }
+    }
+    return pendingMeters;
   }
+
+  @override
+  Future<void> removePendingMeter(String meterId) async {
+    var cacheManager = APICacheManager();
+    String cacheKey = "API_meter_$meterId";
+
+    //Remove the meter data in the cache
+    await cacheManager.deleteCache(cacheKey);
+
+    //Remove the meter key in the cache list
+    var cacheKeysData = await cacheManager.getCacheData("API_pending_keys");
+    List<String> cacheKeys = [];
+    if (cacheKeysData != null) {
+      cacheKeys = List<String>.from(jsonDecode(cacheKeysData.syncData));
+    }
+
+    cacheKeys.remove(cacheKey);
+    await cacheManager.addCacheData(APICacheDBModel(
+        key: 'API_pending_keys', syncData: jsonEncode(cacheKeys)));
+  }
+
+  // Future<List<PendingMeter>> getPendingMeters() async {
+  //   var cacheManager = APICacheManager();
+  //   var cacheData = await cacheManager.getAllCacheData();
+  // }
 }

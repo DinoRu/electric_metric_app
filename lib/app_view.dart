@@ -3,6 +3,7 @@ import 'package:electric_meter_app/screens/auth/bloc/sign_in_bloc/sign_in_bloc.d
 import 'package:electric_meter_app/screens/auth/view/welcome_screen.dart';
 import 'package:electric_meter_app/screens/home/bloc/meter_bloc/meter_bloc.dart';
 import 'package:electric_meter_app/screens/home/bloc/metric_bloc/metric_bloc.dart';
+import 'package:electric_meter_app/screens/home/bloc/pending_bloc/pending_bloc.dart';
 import 'package:electric_meter_app/screens/home/bloc/search_bloc/search_bloc.dart';
 // import 'package:electric_meter_app/screens/home/view/home_screen.dart';
 import 'package:electric_meter_app/screens/home/view/main_screen.dart';
@@ -45,11 +46,8 @@ class MyAppView extends StatelessWidget {
                 create: (context) => SearchBloc(MetricRepository()),
                 // child: const HomeScreen(),
               ),
-              BlocProvider(
-                  create: (context) => MeterBloc(MetricRepository())
-                    ..add(GetMeterEvent(
-                      user: state.user!,
-                    ))),
+              BlocProvider(create: (context) => MeterBloc(MetricRepository())),
+              BlocProvider(create: (context) => PendingBloc())
             ], child: const MainScreen());
           } else {
             return const WelcomeScreen();

@@ -1,5 +1,8 @@
 import 'package:electric_meter_app/blocs/auth_bloc.dart';
+import 'package:electric_meter_app/screens/home/bloc/meter_bloc/meter_bloc.dart';
+import 'package:electric_meter_app/screens/home/bloc/pending_bloc/pending_bloc.dart';
 import 'package:electric_meter_app/screens/home/view/home_screen.dart';
+import 'package:electric_meter_app/screens/home/view/pending_metric_screen.dart';
 import 'package:electric_meter_app/screens/home/view/proccessed_meter_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +19,7 @@ class _MainScreenState extends State<MainScreen> {
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
+    PendingMetricScreen(),
     ProccessedMeterScreen(),
   ];
 
@@ -26,6 +30,21 @@ class _MainScreenState extends State<MainScreen> {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     }
+
+    switch (index) {
+      case 1:
+        context.read<PendingBloc>().add(FetchPendingMeterEvent());
+        break;
+
+      case 2:
+        final user = context.read<AuthBloc>().state.user;
+        context.read<MeterBloc>().add(GetMeterEvent(user: user!));
+    }
+
+    // if (index == 2) {
+    //   final user = context.read<AuthBloc>().state.user;
+    //   context.read<MeterBloc>().add(GetMeterEvent(user: user!));
+    // }
   }
 
   void _onSettingTapped() {
@@ -54,9 +73,14 @@ class _MainScreenState extends State<MainScreen> {
               onTap: () => _onItemTapped(0),
             ),
             ListTile(
+              leading: const Icon(Icons.list),
+              title: const Text('Ожиданые задач'),
+              onTap: () => _onItemTapped(1),
+            ),
+            ListTile(
               leading: const Icon(Icons.done),
               title: const Text('Завершенные задачи'),
-              onTap: () => _onItemTapped(1),
+              onTap: () => _onItemTapped(2),
             ),
             ListTile(
               leading: const Icon(Icons.settings),
@@ -80,10 +104,14 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.donut_large), label: 'В ы п о л н я е т с я'),
+              icon: Icon(Icons.donut_large), label: 'Выполняется'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.pending),
+            label: "В ожидании",
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.check),
-            label: 'В ы п о л н е н о',
+            label: 'Выполнено',
           ),
         ],
         currentIndex: _selectIndex,
