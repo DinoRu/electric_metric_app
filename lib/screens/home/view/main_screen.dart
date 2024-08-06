@@ -1,4 +1,7 @@
 import 'package:electric_meter_app/blocs/auth_bloc.dart';
+import 'package:electric_meter_app/screens/home/bloc/data_list_bloc/data_list_bloc.dart';
+import 'package:electric_meter_app/screens/home/bloc/meter_bloc/meter_bloc.dart';
+import 'package:electric_meter_app/screens/home/view/data_list_screen.dart';
 import 'package:electric_meter_app/screens/home/view/home_screen.dart';
 import 'package:electric_meter_app/screens/home/view/proccessed_meter_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +19,7 @@ class _MainScreenState extends State<MainScreen> {
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
+    DataListScreen(),
     ProccessedMeterScreen(),
   ];
 
@@ -25,6 +29,15 @@ class _MainScreenState extends State<MainScreen> {
     });
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
+    }
+
+    if (index == 1) {
+      context.read<DataListBloc>().add(GetPendingMetricEvent());
+    }
+
+    if (index == 2) {
+      final user = context.read<AuthBloc>().state.user;
+      context.read<MeterBloc>().add(GetMeterEvent(user: user!));
     }
   }
 
@@ -81,6 +94,7 @@ class _MainScreenState extends State<MainScreen> {
         items: const [
           BottomNavigationBarItem(
               icon: Icon(Icons.donut_large), label: 'В ы п о л н я е т с я'),
+          BottomNavigationBarItem(icon: Icon(Icons.pending), label: 'data'),
           BottomNavigationBarItem(
             icon: Icon(Icons.check),
             label: 'В ы п о л н е н о',

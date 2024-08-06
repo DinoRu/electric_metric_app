@@ -68,14 +68,16 @@ class HomeScreen extends StatelessWidget {
               type: QuickAlertType.loading,
               title: 'Загрузка...',
               text: 'Получение данных',
+              // barrierColor: Colors.green,
+              barrierDismissible: false,
             );
           } else if (state is MetricError) {
             QuickAlert.show(
-              context: context,
-              type: QuickAlertType.error,
-              title: 'Oops...',
-              text: "Не удалось данные!",
-            );
+                context: context,
+                type: QuickAlertType.error,
+                title: 'Oops...',
+                text: "Не удалось данные!",
+                barrierDismissible: false);
           } else {
             Navigator.of(context, rootNavigator: true).pop(context);
           }
@@ -107,8 +109,9 @@ class HomeScreen extends StatelessWidget {
                         child: MetricCard(metric: metric));
                   }),
             );
+          } else {
+            return const Center(child: Text('Счетчики недоступны!'));
           }
-          return const Center(child: Text('Счетчики недоступны!'));
         },
       ),
     );

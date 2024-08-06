@@ -1,17 +1,41 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:metric_repository/features/database.dart';
 import 'package:metric_repository/src/metric_repo.dart';
 import 'package:http/http.dart' as http;
 import 'package:user_repository/user_repository.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'models/model.dart';
 
 class MetricRepository implements MetricRepo {
   @override
   Future<List<Metric>> getAllMetric() async {
+    final DatabaseHelper databaseHelper = DatabaseHelper();
+    final db = await databaseHelper.database;
+    // get local metric
+    final List<Map<String, dynamic>> data = await db
+        .query('meters', where: 'status = ?', whereArgs: ['Выполняется']);
+    if (data.isNotEmpty) {
+      log("CACHE : HIT");
+      List<Metric> metrics = data
+          .map((e) => Metric(
+              taskId: e['taskId'],
+              code: e['code'],
+              name: e['name'],
+              number: e['number'],
+              address: e['address'],
+              previousIndication: e['previousIndication'],
+              comment: e['comment'],
+              status: e['status']))
+          .toList();
+      return metrics;
+    }
     try {
       const url = "http://45.84.226.183:5000/tasks";
+
       final response = await http.get(Uri.parse(url),
           headers: {'Content-Type': 'application/json; charset=utf-8'});
       if (response.statusCode == 200) {
@@ -20,8 +44,28 @@ class MetricRepository implements MetricRepo {
         final result = jsonDecode(decoderBody)['result'];
         List<Map<String, dynamic>> dataResults =
             List<Map<String, dynamic>>.from(result['data']);
+        // Store data in the local database
         List<Metric> metrics =
             dataResults.map((e) => Metric.fromJson(e)).toList();
+        await db.transaction((txn) async {
+          for (var metric in metrics) {
+            await txn.insert(
+                'meters',
+                {
+                  "taskId": metric.taskId,
+                  "code": metric.code,
+                  "name": metric.name,
+                  "number": metric.number,
+                  "address": metric.address,
+                  "previousIndication": metric.previousIndication,
+                  "currentIndication": metric.currentIndication,
+                  "comment": metric.comment,
+                  "status": metric.status
+                },
+                conflictAlgorithm: ConflictAlgorithm.replace);
+          }
+        });
+        log("API : HIT");
         return metrics;
       }
     } catch (e) {

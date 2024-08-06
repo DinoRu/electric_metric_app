@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:electric_meter_app/blocs/auth_bloc.dart';
 import 'package:electric_meter_app/components/my_formfield.dart';
 import 'package:electric_meter_app/components/my_photo_button.dart';
 import 'package:electric_meter_app/screens/home/bloc/metric_bloc/metric_bloc.dart';
@@ -120,6 +121,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.read<AuthBloc>().state.user;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.metric.name ?? 'N/A'),
@@ -128,11 +130,11 @@ class _DetailScreenState extends State<DetailScreen> {
         listener: (context, state) {
           if (state is PrelevementLoading) {
             QuickAlert.show(
-              context: context,
-              type: QuickAlertType.loading,
-              title: 'Загрузка...',
-              text: 'Задача выполняется...',
-            );
+                context: context,
+                type: QuickAlertType.loading,
+                title: 'Загрузка...',
+                text: 'Задача выполняется...',
+                barrierDismissible: false);
           } else if (state is PrelevementSuccess) {
             Navigator.of(context, rootNavigator: true).pop();
             QuickAlert.show(
@@ -142,19 +144,20 @@ class _DetailScreenState extends State<DetailScreen> {
                 title: 'Успех',
                 confirmBtnText: 'Ок',
                 confirmBtnColor: Colors.greenAccent,
+                barrierDismissible: false,
                 onConfirmBtnTap: () {
                   Navigator.of(context).pop();
-                  context.read<MetricBloc>().add(RemoveMetric(widget.metric));
+                  context.read<MetricBloc>().add(FetchMetricByUser(user!));
                   Navigator.pop(context);
                 });
           } else if (state is PrelevementFailure) {
             Navigator.of(context, rootNavigator: true).pop();
             QuickAlert.show(
-              context: context,
-              type: QuickAlertType.error,
-              title: 'Oops...',
-              text: state.error,
-            );
+                context: context,
+                type: QuickAlertType.error,
+                title: 'Oops...',
+                text: state.error,
+                barrierDismissible: false);
           }
         },
         child: SingleChildScrollView(

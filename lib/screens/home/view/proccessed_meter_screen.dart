@@ -59,18 +59,18 @@ class ProccessedMeterScreen extends StatelessWidget {
       body: BlocConsumer<MeterBloc, MeterState>(listener: (context, state) {
         if (state is MeterLoading) {
           QuickAlert.show(
-            context: context,
-            type: QuickAlertType.loading,
-            title: 'Загрузка...',
-            text: 'Получение данных',
-          );
+              context: context,
+              type: QuickAlertType.loading,
+              title: 'Загрузка...',
+              text: 'Получение данных',
+              barrierDismissible: false);
         } else if (state is MeterError) {
           QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            title: 'Oops...',
-            text: "Не удалось данные!",
-          );
+              context: context,
+              type: QuickAlertType.error,
+              title: 'Oops...',
+              text: "Не удалось данные!",
+              barrierDismissible: false);
         } else {
           Navigator.of(context, rootNavigator: true).pop();
         }
