@@ -12,12 +12,14 @@ The project follows the Clean Architecture principles, separating the app into d
 
 <ul>
   
-
 <li>Presentation Layer: Contains the Flutter widgets, Blocs, and UI-related logic.</li>
 <li>Domain Layer: Contains business logic and use cases.</li>
 <li>Data Layer: Manages data sources such as APIs and local databases.</li>
 </ul>
 <p>Setting version of app</p>
+
 ## Project Structure
+
+## Offline section
 
 A few resources to get you started if this is your first Flutter project:
