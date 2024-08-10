@@ -121,7 +121,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AuthBloc>().state.user;
+    final user = context.read<AuthBloc>().state.user!;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.metric.name ?? 'N/A'),
@@ -147,7 +147,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 barrierDismissible: false,
                 onConfirmBtnTap: () {
                   Navigator.of(context).pop();
-                  context.read<MetricBloc>().add(FetchMetricByUser(user!));
+                  context.read<MetricBloc>().add(FetchMetricByUser(user));
                   Navigator.pop(context);
                 });
           } else if (state is PrelevementFailure) {
