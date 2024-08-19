@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:user_repository/features/user_database.dart';
 import 'package:user_repository/src/models/user_model.dart';
 import 'package:user_repository/src/user_repos.dart';
 import 'package:http/http.dart' as http;
 
 class ApiUserRepository implements UserRepos {
+  final UserDatabaseHelper _dbHelper = UserDatabaseHelper();
   static jwtDecodeToken(String token) {
     Map<String, dynamic> payload = JwtDecoder.decode(token);
     return payload['user_id'];
@@ -38,7 +41,11 @@ class ApiUserRepository implements UserRepos {
         final token = jsonDecode(response.body);
         final userId = jwtDecodeToken(token);
         final user = await getUserByID(userId);
-        return user.copyWith(token: token);
+        // Stocke user to local
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user', jsonEncode(user.toJson()));
+        await prefs.setString('token', token);
+        return user;
       } else {
         throw Exception('Failed to login');
       }
@@ -49,5 +56,7 @@ class ApiUserRepository implements UserRepos {
   }
 
   @override
-  Future<void> logout() async {}
+  Future<void> logout() async {
+    await _dbHelper.clearSession();
+  }
 }

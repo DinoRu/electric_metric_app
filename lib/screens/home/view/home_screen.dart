@@ -1,5 +1,6 @@
 import 'package:electric_meter_app/blocs/auth_bloc.dart';
 import 'package:electric_meter_app/components/metric_card.dart';
+// import 'package:electric_meter_app/components/myShowDialog.dart';
 import 'package:electric_meter_app/screens/home/bloc/metric_bloc/metric_bloc.dart';
 import 'package:electric_meter_app/screens/home/bloc/prelevement_bloc/prelevement_bloc.dart';
 import 'package:electric_meter_app/screens/home/view/detail_screen.dart';
@@ -7,13 +8,16 @@ import 'package:electric_meter_app/screens/home/view/search_metric_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:user_repository/user_repository.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   Future<void> _refreshList(BuildContext context, User user) async {
     final state = context.read<MetricBloc>().state;
     if (state is MetricLoaded && state.metrics.isNotEmpty) {
@@ -60,28 +64,7 @@ class HomeScreen extends StatelessWidget {
         )
       ]),
       // drawer: const MyDrawer(),
-      body: BlocConsumer<MetricBloc, MetricState>(
-        listener: (context, state) {
-          if (state is MetricLoading) {
-            QuickAlert.show(
-              context: context,
-              type: QuickAlertType.loading,
-              title: 'Загрузка...',
-              text: 'Получение данных',
-              // barrierColor: Colors.green,
-              barrierDismissible: false,
-            );
-          } else if (state is MetricError) {
-            QuickAlert.show(
-                context: context,
-                type: QuickAlertType.error,
-                title: 'Oops...',
-                text: "Не удалось данные!",
-                barrierDismissible: false);
-          } else {
-            Navigator.of(context, rootNavigator: true).pop(context);
-          }
-        },
+      body: BlocBuilder<MetricBloc, MetricState>(
         builder: (context, state) {
           if (state is MetricLoaded) {
             return RefreshIndicator(
@@ -109,6 +92,8 @@ class HomeScreen extends StatelessWidget {
                         child: MetricCard(metric: metric));
                   }),
             );
+          } else if (state is MetricLoading) {
+            return const Center(child: CircularProgressIndicator());
           } else {
             return const Center(child: Text('Счетчики недоступны!'));
           }

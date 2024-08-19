@@ -11,13 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_exif_plugin/flutter_exif_plugin.dart';
 import 'package:flutter_exif_plugin/tags.dart';
+import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:metric_repository/metric_repository.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 class DetailScreen extends StatefulWidget {
   final Metric metric;
@@ -122,195 +121,182 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.read<AuthBloc>().state.user!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.metric.name ?? 'N/A'),
-      ),
-      body: BlocListener<PrelevementBloc, PrelevementState>(
-        listener: (context, state) {
-          if (state is PrelevementLoading) {
-            QuickAlert.show(
-                context: context,
-                type: QuickAlertType.loading,
-                title: 'Загрузка...',
-                text: 'Задача выполняется...',
-                barrierDismissible: false);
-          } else if (state is PrelevementSuccess) {
-            Navigator.of(context, rootNavigator: true).pop();
-            QuickAlert.show(
-                context: context,
-                type: QuickAlertType.success,
-                text: 'Задание выполнено успешно!',
-                title: 'Успех',
-                confirmBtnText: 'Ок',
-                confirmBtnColor: Colors.greenAccent,
-                barrierDismissible: false,
-                onConfirmBtnTap: () {
-                  Navigator.of(context).pop();
-                  context.read<MetricBloc>().add(FetchMetricByUser(user));
-                  Navigator.pop(context);
-                });
-          } else if (state is PrelevementFailure) {
-            Navigator.of(context, rootNavigator: true).pop();
-            QuickAlert.show(
-                context: context,
-                type: QuickAlertType.error,
-                title: 'Oops...',
-                text: state.error,
-                barrierDismissible: false);
-          }
-        },
-        child: SingleChildScrollView(
-          child: Container(
-            width: double.maxFinite,
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.all(12),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Title("Номер счетчика", widget.metric.number),
-                  divider,
-                  Title('Наименование', widget.metric.name),
-                  divider,
-                  Title('Предыдущие показания',
-                      widget.metric.previousIndication.toString()),
-                  divider,
-                  const SizedBox(height: 10),
-                  const Text('Текущие показания'),
-                  const SizedBox(height: 10),
-                  MyTextFormField(
-                    controller: indexController,
-                    hintText: '0',
-                    keyboardType: TextInputType.number,
-                    validator: (val) {
-                      if (val!.isEmpty) {
-                        return "Пожалуйста, заполните это поле";
-                      } else if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(val)) {
-                        return "Пожалуйста, введите действительное значение";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  const Text('Комментарий'),
-                  const SizedBox(height: 10),
-                  MyTextFormField(
-                      controller: commentController,
-                      hintText: 'Напишите комментарий',
-                      keyboardType: TextInputType.text),
-                  const SizedBox(height: 20),
-                  if (_meterImageFile != null)
-                    Image.file(
-                      File(_meterImageFile!.path),
-                      width: double.maxFinite,
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
-                  SizedBox(
-                      width: double.maxFinite,
-                      child: PictureButton('Фото показаний', () async {
-                        final pickedFile = await _picker.pickImage(
-                            source: ImageSource.camera, imageQuality: 40);
-                        if (pickedFile != null) {
-                          File image = File(pickedFile.path);
-                          bool hasGeo = await _checkGeotags(image);
-                          log("Meter image has Geo tags: $hasGeo");
-                          if (!hasGeo) {
-                            Position position = await _determinePosition();
-                            await _addGeotagFlutterExif(pickedFile, position);
-                            await _readMetadata(image);
-                            log(position.toString());
-                          }
-                          await _readMetadata(image);
-                          setState(() {
-                            _meterImageFile = pickedFile;
-
-                            _isSecondButtonVisible = true;
-                          });
+    return ProgressHUD(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.metric.name ?? 'N/A'),
+        ),
+        body: BlocListener<PrelevementBloc, PrelevementState>(
+          listener: (context, state) {
+            final progressHUD = ProgressHUD.of(context);
+            if (state is PrelevementLoading) {
+              progressHUD?.show();
+            } else if (state is PrelevementSuccess) {
+              progressHUD?.dismiss();
+              _showSnackBar(
+                  context, 'Задание выполнено успешно!', Colors.greenAccent);
+              context.read<MetricBloc>().add(FetchMetricByUser(user));
+              Navigator.pop(context);
+            } else if (state is PrelevementFailure) {
+              progressHUD?.dismiss();
+              _showSnackBar(context, state.error, Colors.red);
+            }
+          },
+          child: SingleChildScrollView(
+            child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.all(12),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Title("Номер счетчика", widget.metric.number),
+                    divider,
+                    Title('Наименование', widget.metric.name),
+                    divider,
+                    Title('Предыдущие показания',
+                        widget.metric.previousIndication.toString()),
+                    divider,
+                    const SizedBox(height: 10),
+                    const Text('Текущие показания'),
+                    const SizedBox(height: 10),
+                    MyTextFormField(
+                      controller: indexController,
+                      hintText: '0',
+                      keyboardType: TextInputType.number,
+                      validator: (val) {
+                        if (val!.isEmpty) {
+                          return "Пожалуйста, заполните это поле";
+                        } else if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(val)) {
+                          return "Пожалуйста, введите действительное значение";
                         }
-                      })),
-                  const SizedBox(height: 10),
-                  if (_metricImageFile != null)
-                    Image.file(
-                      File(_metricImageFile!.path),
-                      width: double.maxFinite,
-                      height: 200,
-                      fit: BoxFit.cover,
+                        return null;
+                      },
                     ),
-                  if (_isSecondButtonVisible)
+                    const SizedBox(height: 10),
+                    const Text('Комментарий'),
+                    const SizedBox(height: 10),
+                    MyTextFormField(
+                        controller: commentController,
+                        hintText: 'Напишите комментарий',
+                        keyboardType: TextInputType.text),
+                    const SizedBox(height: 20),
+                    if (_meterImageFile != null)
+                      Image.file(
+                        File(_meterImageFile!.path),
+                        width: double.maxFinite,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
                     SizedBox(
                         width: double.maxFinite,
-                        child: PictureButton('Фото счётчика', () async {
+                        child: PictureButton('Фото показаний', () async {
                           final pickedFile = await _picker.pickImage(
-                              source: ImageSource.camera, imageQuality: 40);
+                              source: ImageSource.camera,
+                              imageQuality: 40,
+                              preferredCameraDevice: CameraDevice.rear);
                           if (pickedFile != null) {
-                            File metricImage = File(pickedFile.path);
-                            bool hasGeoLocalisation =
-                                await _checkGeotags(metricImage);
-                            log("Metric image has: $hasGeoLocalisation");
-                          }
-                          setState(() {
-                            if (pickedFile != null) {
-                              _metricImageFile = pickedFile;
+                            File image = File(pickedFile.path);
+                            bool hasGeo = await _checkGeotags(image);
+                            log("Meter image has Geo tags: $hasGeo");
+                            if (!hasGeo) {
+                              Position position = await _determinePosition();
+                              await _addGeotagFlutterExif(pickedFile, position);
+                              await _readMetadata(image);
+                              log(position.toString());
                             }
-                          });
+                            await _readMetadata(image);
+                            setState(() {
+                              _meterImageFile = pickedFile;
+
+                              _isSecondButtonVisible = true;
+                            });
+                          }
                         })),
-                  if (_photoMissing)
-                    const Text(
-                      'Пожалуйста, добавьте обе фотографии.',
-                      style: TextStyle(color: Colors.red, fontSize: 14),
-                    ),
-                  const SizedBox(height: 40),
-                  !submitted
-                      ? SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          child: TextButton(
-                              onPressed: () {
-                                if (_formKey.currentState!.validate() &&
-                                    _validatePhotos()) {
-                                  context.read<PrelevementBloc>().add(
-                                      SubmitEvent(
-                                          meterId: widget.metric.taskId!,
-                                          meterName: widget.metric.number!,
-                                          previousIndication:
-                                              widget.metric.previousIndication!,
-                                          currentIndication: double.parse(
-                                              indexController.text),
-                                          meterImage: _meterImageFile!,
-                                          metricImage: _metricImageFile!,
-                                          comment: commentController.text));
-                                } else {
-                                  setState(() {
-                                    _photoMissing = true;
-                                  });
-                                }
-                              },
-                              style: TextButton.styleFrom(
-                                  elevation: 3.0,
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.primary,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(60))),
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 25, vertical: 5),
-                                child: Text(
-                                  'Выполнить',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                              )),
-                        )
-                      : const Center(
-                          child: CircularProgressIndicator(),
-                        )
-                ],
+                    const SizedBox(height: 10),
+                    if (_metricImageFile != null)
+                      Image.file(
+                        File(_metricImageFile!.path),
+                        width: double.maxFinite,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                    if (_isSecondButtonVisible)
+                      SizedBox(
+                          width: double.maxFinite,
+                          child: PictureButton('Фото счётчика', () async {
+                            final pickedFile = await _picker.pickImage(
+                                source: ImageSource.camera, imageQuality: 40);
+                            if (pickedFile != null) {
+                              File metricImage = File(pickedFile.path);
+                              bool hasGeoLocalisation =
+                                  await _checkGeotags(metricImage);
+                              log("Metric image has: $hasGeoLocalisation");
+                            }
+                            setState(() {
+                              if (pickedFile != null) {
+                                _metricImageFile = pickedFile;
+                              }
+                            });
+                          })),
+                    if (_photoMissing)
+                      const Text(
+                        'Пожалуйста, добавьте обе фотографии.',
+                        style: TextStyle(color: Colors.red, fontSize: 14),
+                      ),
+                    const SizedBox(height: 40),
+                    !submitted
+                        ? SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            child: TextButton(
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate() &&
+                                      _validatePhotos()) {
+                                    context.read<PrelevementBloc>().add(
+                                        SubmitEvent(
+                                            meterId: widget.metric.taskId!,
+                                            meterName: widget.metric.number!,
+                                            previousIndication: widget
+                                                .metric.previousIndication!,
+                                            currentIndication: double.parse(
+                                                indexController.text),
+                                            meterImage: _meterImageFile!,
+                                            metricImage: _metricImageFile!,
+                                            comment: commentController.text));
+                                  } else {
+                                    setState(() {
+                                      _photoMissing = true;
+                                    });
+                                  }
+                                },
+                                style: TextButton.styleFrom(
+                                    elevation: 3.0,
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(60))),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 25, vertical: 5),
+                                  child: Text(
+                                    'Выполнить',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                )),
+                          )
+                        : const Center(
+                            child: CircularProgressIndicator(),
+                          )
+                  ],
+                ),
               ),
             ),
           ),
@@ -341,6 +327,15 @@ class _DetailScreenState extends State<DetailScreen> {
             style: medium,
           ))
         ],
+      ),
+    );
+  }
+
+  void _showSnackBar(BuildContext context, String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
       ),
     );
   }

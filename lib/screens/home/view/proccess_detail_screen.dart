@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:electric_meter_app/components/showEditBottomSheet.dart';
 import 'package:flutter/material.dart';
 import 'package:metric_repository/metric_repository.dart';
 
@@ -11,6 +14,14 @@ class ProccessDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('${meter.number}'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                log('Update bottom sheet');
+              },
+              icon: const Icon(Icons.edit, color: Colors.grey)),
+          const SizedBox(width: 10)
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(

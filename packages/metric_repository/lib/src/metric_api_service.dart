@@ -128,4 +128,13 @@ class MetricRepository implements MetricRepo {
       throw Exception("Error to failed");
     }
   }
+
+  Future<List<Meter>> searchMeters(User user) async {
+    try {
+      final List<Meter> searchMeters = await getMeterByUser(user);
+      return searchMeters;
+    } catch (e) {
+      throw ("Error to failed");
+    }
+  }
 }

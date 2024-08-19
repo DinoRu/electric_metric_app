@@ -1,3 +1,4 @@
+import 'package:metric_repository/metric_repository.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -9,11 +10,7 @@ class DatabaseHelper {
 
   //DATABASE TABLE NAME
   final String table = 'meters';
-
-  //Colonnes de la table;
-  final String columnId = 'id';
-  final String columnKey = 'key';
-  final String columnData = 'data';
+  final String userTable = 'users';
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -53,5 +50,56 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getMetersByStatus(String status) async {
     final db = await database;
     return db.query('meters', where: 'status = ?', whereArgs: [status]);
+  }
+
+  Future<int> deleteMeter(String id) async {
+    final db = await database;
+    return db.delete('meters', where: "taskId = ?", whereArgs: [id]);
+  }
+
+  Future<List<Metric>> getPendingMeters() async {
+    List<Map<String, dynamic>> data = await getMetersByStatus("Проверяется");
+    List<Metric> metrics = data
+        .map((e) => Metric(
+              taskId: e["taskId"],
+              code: e["code"],
+              name: e["name"],
+              address: e["address"],
+              number: e["number"],
+              previousIndication: e["previousIndication"],
+              currentIndication: e["currentIndication"],
+              nearPhotoUrl: e["nearPhotoUrl"],
+              farPhotoUrl: e["farPhotoUrl"],
+              comment: e["comment"],
+              status: e["status"],
+            ))
+        .toList();
+    return metrics;
+  }
+
+  Future<void> saveUserSession(String userId, String token) async {
+    final db = await database;
+    await db.insert(
+        'users',
+        {
+          "userId": userId,
+          "token": token,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<Map<String, String?>> getUserSession() async {
+    final db = await database;
+    List<Map<String, dynamic>> data = await db.query('users');
+    if (data.isNotEmpty) {
+      final session = data.first;
+      return {"userId": session["userId"], "token": session["token"]};
+    }
+    return {};
+  }
+
+  Future<void> clearSession() async {
+    final db = await database;
+    await db.delete('users');
   }
 }

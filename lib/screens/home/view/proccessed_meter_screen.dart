@@ -1,11 +1,11 @@
 import 'package:electric_meter_app/blocs/auth_bloc.dart';
 import 'package:electric_meter_app/components/meter_card.dart';
 import 'package:electric_meter_app/screens/home/bloc/meter_bloc/meter_bloc.dart';
+import 'package:electric_meter_app/screens/home/view/meter_search_screen.dart';
 import 'package:electric_meter_app/screens/home/view/proccess_detail_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:user_repository/user_repository.dart';
 
 class ProccessedMeterScreen extends StatelessWidget {
@@ -25,6 +25,15 @@ class ProccessedMeterScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Завершенные задачи"),
         actions: [
+          IconButton(
+              onPressed: () {
+                showSearch(
+                    context: context,
+                    delegate: SearchMeter(BlocProvider.of<MeterBloc>(context),
+                        authBloc.state.user!));
+              },
+              icon: const Icon(CupertinoIcons.search)),
+          const SizedBox(width: 4),
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: BlocBuilder<MeterBloc, MeterState>(
@@ -56,26 +65,16 @@ class ProccessedMeterScreen extends StatelessWidget {
           )
         ],
       ),
-      body: BlocConsumer<MeterBloc, MeterState>(listener: (context, state) {
-        if (state is MeterLoading) {
-          QuickAlert.show(
-              context: context,
-              type: QuickAlertType.loading,
-              title: 'Загрузка...',
-              text: 'Получение данных',
-              barrierDismissible: false);
-        } else if (state is MeterError) {
-          QuickAlert.show(
-              context: context,
-              type: QuickAlertType.error,
-              title: 'Oops...',
-              text: "Не удалось данные!",
-              barrierDismissible: false);
-        } else {
-          Navigator.of(context, rootNavigator: true).pop();
-        }
-      }, builder: (context, state) {
+      body: BlocBuilder<MeterBloc, MeterState>(builder: (context, state) {
         if (state is MeterLoaded) {
+          if (state.meters.isEmpty) {
+            return const Center(
+              child: Text(
+                'Обходы не загружены',
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            );
+          }
           return RefreshIndicator(
             onRefresh: () => _refreshList(context, authBloc.state.user!),
             child: ListView.builder(
@@ -94,8 +93,11 @@ class ProccessedMeterScreen extends StatelessWidget {
                       child: MeterCard(meter: meter));
                 }),
           );
+        } else if (state is MeterLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else {
+          return const Center(child: Text('Счетчики недоступны!'));
         }
-        return const Center(child: Text('Счетчики недоступны!'));
       }),
     );
   }

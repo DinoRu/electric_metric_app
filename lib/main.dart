@@ -1,4 +1,3 @@
-import 'package:background_fetch/background_fetch.dart';
 import 'package:bloc/bloc.dart';
 import 'package:electric_meter_app/simple_bloc_observer.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
@@ -6,14 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:metric_repository/metric_repository.dart';
 import 'package:user_repository/user_repository.dart';
-
 import 'app.dart';
 import 'firebase_options.dart';
-
-void backgroundFetchHeadlessTask(HeadlessTask task) {
-  Metricservice service = Metricservice();
-  service.syncPendingData();
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

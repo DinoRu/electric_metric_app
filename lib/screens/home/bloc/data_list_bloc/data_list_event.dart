@@ -8,3 +8,5 @@ sealed class DataListEvent extends Equatable {
 }
 
 class GetPendingMetricEvent extends DataListEvent {}
+
+class UplaodAllMetricsEvent extends DataListEvent {}

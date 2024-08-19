@@ -5,6 +5,7 @@ import 'package:electric_meter_app/screens/home/bloc/data_list_bloc/data_list_bl
 import 'package:electric_meter_app/screens/home/bloc/meter_bloc/meter_bloc.dart';
 import 'package:electric_meter_app/screens/home/bloc/metric_bloc/metric_bloc.dart';
 import 'package:electric_meter_app/screens/home/bloc/search_bloc/search_bloc.dart';
+import 'package:electric_meter_app/screens/home/bloc/sync_bloc/sync_bloc.dart';
 // import 'package:electric_meter_app/screens/home/view/home_screen.dart';
 import 'package:electric_meter_app/screens/home/view/main_screen.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,8 @@ class MyAppView extends StatelessWidget {
                 // child: const HomeScreen(),
               ),
               BlocProvider(create: (context) => MeterBloc(MetricRepository())),
-              BlocProvider(create: (context) => DataListBloc())
+              BlocProvider(create: (context) => DataListBloc()),
+              BlocProvider(create: (context) => SyncBloc()),
             ], child: const MainScreen());
           } else {
             return const WelcomeScreen();

@@ -26,7 +26,6 @@ class _SignInScreenState extends State<SignInScreen> {
     return BlocListener<SignInBloc, SignInState>(
       listener: (context, state) {
         if (state is SignInSuccess) {
-          print(state.user.token);
           setState(() {
             signInRequired = false;
           });

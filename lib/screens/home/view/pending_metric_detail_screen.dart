@@ -11,7 +11,7 @@ class PendingMetricDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pending metric detail"),
+        title: Text(metric.number!),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -34,7 +34,7 @@ class PendingMetricDetailScreen extends StatelessWidget {
               if (metric.nearPhotoUrl!.isNotEmpty)
                 Image.file(
                   File(metric.nearPhotoUrl!),
-                  fit: BoxFit.fill,
+                  fit: BoxFit.cover,
                   width: double.infinity,
                   height: 200,
                 ),
@@ -43,7 +43,7 @@ class PendingMetricDetailScreen extends StatelessWidget {
               if (metric.farPhotoUrl!.isNotEmpty)
                 Image.file(
                   File(metric.farPhotoUrl!),
-                  fit: BoxFit.fill,
+                  fit: BoxFit.cover,
                   width: double.infinity,
                   height: 200,
                 ),

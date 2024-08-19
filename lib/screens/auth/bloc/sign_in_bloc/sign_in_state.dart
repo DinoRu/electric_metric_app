@@ -4,21 +4,19 @@ sealed class SignInState extends Equatable {
   const SignInState();
 
   @override
-  // TODO: implement props
   List<Object?> get props => [];
 }
 
 final class SignInInitial extends SignInState {}
 
 final class SignInFailure extends SignInState {}
+
 final class SignInProcess extends SignInState {}
+
 final class SignInSuccess extends SignInState {
   final User user;
-
   const SignInSuccess(this.user);
 
   @override
-  // TODO: implement props
   List<Object?> get props => [user];
 }
-
